@@ -70,6 +70,27 @@ function buildDressing(config: DressingConfig): THREE.Group {
   return group
 }
 
+// Dimensions max possibles (bornes des sliders), en mètres.
+// La caméra est cadrée sur ce gabarit une fois pour toutes : elle ne bouge
+// donc jamais quand on change la config, et la hauteur apparente reste
+// constante quelle que soit la largeur choisie.
+const MAX_DIMS = { w: 400 / 100, h: 280 / 100, d: 80 / 100 }
+
+/**
+ * Place la caméra pour que le PLUS GRAND meuble possible tienne dans le cadre,
+ * en tenant compte du ratio du viewport. Distance indépendante de la config.
+ */
+function frameCamera(camera: THREE.PerspectiveCamera) {
+  const fov = (camera.fov * Math.PI) / 180
+  // Largeur apparente max une fois le meuble pivoté (diagonale au sol)
+  const horiz = Math.sqrt(MAX_DIMS.w * MAX_DIMS.w + MAX_DIMS.d * MAX_DIMS.d)
+  const fitH = MAX_DIMS.h / 2 / Math.tan(fov / 2)
+  const fitW = horiz / 2 / (Math.tan(fov / 2) * camera.aspect)
+  const dist = Math.max(fitH, fitW) * 1.08 + MAX_DIMS.d / 2
+  camera.position.set(0, 0, dist)
+  camera.lookAt(0, 0, 0)
+}
+
 export default function Configurator() {
   const [config, setConfig] = useState<DressingConfig>(DEFAULT_CONFIG)
 
@@ -92,7 +113,7 @@ export default function Configurator() {
     scene.background = new THREE.Color(0xf5f1ea)
 
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100)
-    camera.position.set(0, 0, 5)
+    frameCamera(camera)
 
     const renderer = new THREE.WebGLRenderer({ antialias: true })
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
@@ -135,6 +156,7 @@ export default function Configurator() {
     }
     const el = renderer.domElement
     el.style.cursor = 'grab'
+    el.style.touchAction = 'none' // permet le pivot tactile sans scroller la page
     el.addEventListener('pointerdown', onDown)
     window.addEventListener('pointerup', onUp)
     window.addEventListener('pointermove', onMove)
@@ -145,7 +167,6 @@ export default function Configurator() {
       if (dressingRef.current) {
         dressingRef.current.rotation.y = rotationRef.current.y
         dressingRef.current.rotation.x = rotationRef.current.x
-        if (!dragging) rotationRef.current.y += 0.002
       }
       renderer.render(scene, camera)
     }
@@ -157,6 +178,7 @@ export default function Configurator() {
       camera.aspect = w / h
       camera.updateProjectionMatrix()
       renderer.setSize(w, h)
+      frameCamera(camera)
     }
     window.addEventListener('resize', onResize)
 
@@ -190,10 +212,6 @@ export default function Configurator() {
     const dressing = buildDressing(config)
     dressingRef.current = dressing
     scene.add(dressing)
-
-    // Cadre la caméra sur la plus grande dimension
-    const maxDim = Math.max(config.largeur, config.hauteur) / 100
-    camera.position.z = maxDim * 2.2 + 1
   }, [config])
 
   const update = <K extends keyof DressingConfig>(key: K, value: DressingConfig[K]) =>
