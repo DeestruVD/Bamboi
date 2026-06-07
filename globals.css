@@ -1,0 +1,66 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap');
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-cream text-charcoal overflow-x-hidden font-sans;
+  }
+}
+
+@layer components {
+  /* Slider range custom */
+  .range-oak {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    background: rgba(196, 147, 90, 0.2);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+  .range-oak::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #c4935a;
+    cursor: pointer;
+  }
+  .range-oak::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #c4935a;
+    cursor: pointer;
+    border: none;
+  }
+
+  /* Animations hero scroll */
+  @keyframes bounce-slow {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(6px); }
+  }
+  .animate-bounce-slow {
+    animation: bounce-slow 2s ease-in-out infinite;
+  }
+
+  /* Hero grid pattern */
+  .hero-pattern {
+    background-image:
+      repeating-linear-gradient(
+        0deg, transparent, transparent 60px,
+        rgba(196,147,90,0.04) 60px, rgba(196,147,90,0.04) 61px
+      ),
+      repeating-linear-gradient(
+        90deg, transparent, transparent 60px,
+        rgba(196,147,90,0.04) 60px, rgba(196,147,90,0.04) 61px
+      );
+  }
+}
